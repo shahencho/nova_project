@@ -1,4 +1,4 @@
-import MySQLdb
+# import MySQLdb
 import mysql.connector
 from datetime import datetime
 
@@ -6,10 +6,10 @@ import settings
 
 def initiate_connection():
     mydb = mysql.connector.connect(
-    host='shahencho.mysql.pythonanywhere-services.com',
+    host='localhost',
     user='shahencho',
     password='Myelea82!',
-    database='shahencho$mydatabase'
+    database='shahencho_mydatabase'
     )
     return mydb
 

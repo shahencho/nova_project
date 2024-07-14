@@ -76,7 +76,7 @@ if if_user_is_new(5215699499):
 
 # print(Find_Dept_By_Code("P-5534-22091"))
 
-
+#innova_bot 7072468689:AAE5wCELSvL7T6V81S7-CXrzLwk2pvwAxDE' 
 token = '7072468689:AAE5wCELSvL7T6V81S7-CXrzLwk2pvwAxDE'
 bot = telebot.TeleBot(token)
 HELP = """
@@ -129,7 +129,7 @@ def Find_Code_By_address(message_chat_id,kotorak, bnak_hamar, worksheet_sequence
 
         if combined_row =="A-5520-187" or combined_row =="A-5520-188":
             combined_row = "A-5520-187-188"
-            #this is beacause in google doc we have such exception , that code for flats 187 and 88 are together, so we should find code with A-5520-187-188
+            #this is beacause in google doc we have such exception , that code for flats 187 and 188 are together, so we should find code with A-5520-187-188
 
         print("combined_row =  BROOOOOOOOOOOOOOOOOOOOOOOO --------------------" + combined_row )
 
@@ -1101,6 +1101,15 @@ def func(message):
 # if __name__ == '__main__':
 #     bot.polling(none_stop=True)
 
+import logging
+import time
+
+# Configure logging added from chatgpt
+
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.ERROR)
+
 try:
 
     bot.polling(none_stop=True)
@@ -1120,11 +1129,7 @@ except Exception as e:
 
 
 
-# Configure logging added from chatgpt
 
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.ERROR)
 
 # Initialize the bot with your API key
 #bot = telebot.TeleBot('YOUR_API_KEY_HERE')
