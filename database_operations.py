@@ -48,3 +48,29 @@ def update_user_details(telegram_id, obj_type, unique_payment_code):
     finally:
         cursor.close()
         mydb.close()
+
+
+
+def save_user(telegram_id, mobile_number):
+    connection = initiate_connection()
+    cursor = connection.cursor()
+
+    # Check if user already exists
+    query = "SELECT * FROM user_table_inova_new WHERE telegram_id = %s"
+    cursor.execute(query, (telegram_id,))
+    user = cursor.fetchone()
+
+    if user:
+        logger.info(f"User with telegram_id {telegram_id} already exists in the database.")
+    else:
+        # Insert new user
+        query = """
+        INSERT INTO user_table_inova_new (telegram_id, mobile_number)
+        VALUES (%s, %s)
+        """
+        cursor.execute(query, (telegram_id, mobile_number))
+        connection.commit()
+        logger.info(f"New user with telegram_id {telegram_id} has been added to the database.")
+
+    cursor.close()
+    connection.close()

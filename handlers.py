@@ -2,7 +2,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from menu_helpers import get_object_menu, get_flat_building_menu
 from api_helpers import fetch_deposit_and_debt_from_api
-from database_operations import check_user_exists
+from database_operations import check_user_exists, save_user
 from menu_helpers import get_public_space_building_menu
 import logging
 from menu_helpers import get_object_menu, get_parking_building_menu
@@ -195,5 +195,21 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Optionally, show main menu again
             reply_markup = get_object_menu()
             await update.message.reply_text("Do you want to look at other information?", reply_markup=reply_markup)
+        elif  state == "ask_mobile":
+            mobile_number = update.message.text
+            logger.info(f"User provided mobile number: {mobile_number}")
+
+            # Validate mobile number
+            if mobile_number.isdigit() and len(mobile_number) == 10:
+                # Save to the database
+                save_user(telegram_id, mobile_number)
+
+                # Update state and show the menu
+                user_data[telegram_id]["state"] = "object_selection"
+                reply_markup = get_object_menu()
+                await update.message.reply_text("Thank you! Your mobile number has been registered.")
+                await update.message.reply_text("Now, please choose an object:", reply_markup=reply_markup)
+            else:
+                await update.message.reply_text("Invalid mobile number. Please enter a valid number:")
         
         
