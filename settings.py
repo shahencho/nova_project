@@ -1,3 +1,4 @@
+BOT_TOKEN = "7576350206:AAFfR-I6r4tfaP6m2yQBWGsrAPMpLQt9CL8"
 Cell_To_Find1 = "initial"
 selected_worksheet_is1 = 0
 last_kotorak_value1 = 0
