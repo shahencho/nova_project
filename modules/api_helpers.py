@@ -36,7 +36,50 @@ def fetch_deposit_and_debt_from_api(unique_code):
         response.raise_for_status()
         data = response.json()
         logger.info(url)
+
+                # Log the full API response
+        logger.info(f"API Response for {unique_code}: {data}")   
         return data.get("deposit"), data.get("debt")
     except Exception as e:
         logger.error(f"API call failed: {e}")
         return None, None
+    
+def fetch_customer_properties(mobile_number):
+    global TOKEN
+    if not TOKEN:
+        TOKEN = fetch_auth_token()
+        if not TOKEN:
+            logger.error("Unable to fetch Bearer token. Aborting API call.")
+            return None
+
+    try:
+        url = f"https://condominium-server.technologist.ai/api/Customer/telegram/validation?phoneNumber={mobile_number}"
+        headers = {"Authorization": f"Bearer {TOKEN}"}
+        logger.info(f"Calling validation API with URL: {url}")
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        logger.error(f"Validation API call failed: {e}")
+        return None
+
+def fetch_debt_for_code(code):
+    global TOKEN
+    if not TOKEN:
+        TOKEN = fetch_auth_token()
+        if not TOKEN:
+            logger.error("Unable to fetch Bearer token. Aborting API call.")
+            return None
+
+    try:
+        url = f"https://condominium-server.technologist.ai/api/Customer/telegram/getPropInfo?code={code}"
+        headers = {"Authorization": f"Bearer {TOKEN}"}
+        logger.info(f"Calling getPropInfo API with URL: {url}")
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+    
+        return data.get("debt")
+    except Exception as e:
+        logger.error(f"getPropInfo API call failed for code {code}: {e}")
+        return None

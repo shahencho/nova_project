@@ -1,11 +1,13 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from menu_helpers import get_object_menu, get_flat_building_menu
-from api_helpers import fetch_deposit_and_debt_from_api
+from api_helpers import fetch_deposit_and_debt_from_api, fetch_customer_properties, fetch_debt_for_code
 from database_operations import check_user_exists, save_user
 from menu_helpers import get_public_space_building_menu
 import logging
 from menu_helpers import get_object_menu, get_parking_building_menu
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +34,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Welcome back! Please choose your object:", reply_markup=get_object_menu())
     else:
         user_data[telegram_id] = {"state": "ask_mobile"}
-        await update.message.reply_text("Welcome! Please enter your mobile number:")
+        await update.message.reply_text("Welcome! Please enter your mobile number: valid number: +374xxxxxxxx  or 0xxxxxxxx")
 
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -84,7 +86,25 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_data[query.from_user.id] = {"state": "entering_parking", "building": building}
         await query.edit_message_text(f"You selected Building {building}. Please enter the parking ID:")
 
-    
+import re
+
+def validate_mobile_number(mobile_number):
+    """
+    Validates a mobile number to match the formats:
+    +374XXXXXXXX or 0XXXXXXXX.
+    """
+    pattern = r"^\+374\d{8}$|^0\d{8}$"
+    return bool(re.match(pattern, mobile_number))
+
+# Test cases
+print(validate_mobile_number("+37491995901"))  # True
+print(validate_mobile_number("091995901"))     # True
+print(validate_mobile_number("+3749199590"))   # False
+print(validate_mobile_number("91995901"))      # False
+
+
+
+
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     telegram_id = update.message.from_user.id
@@ -195,21 +215,101 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Optionally, show main menu again
             reply_markup = get_object_menu()
             await update.message.reply_text("Do you want to look at other information?", reply_markup=reply_markup)
-        elif  state == "ask_mobile":
+#         
+      
+        elif state == "ask_mobile":
+
             mobile_number = update.message.text
             logger.info(f"User provided mobile number: {mobile_number}")
 
-            # Validate mobile number
-            if mobile_number.isdigit() and len(mobile_number) == 10:
-                # Save to the database
-                save_user(telegram_id, mobile_number)
+         
+            if mobile_number.startswith("+"):
+                mobile_number = mobile_number[1:]  # Remove '+'
+            elif mobile_number.startswith("0"):
+                mobile_number = "374" + mobile_number[1:]  # Replace '0' with '374'
 
-                # Update state and show the menu
-                user_data[telegram_id]["state"] = "object_selection"
-                reply_markup = get_object_menu()
-                await update.message.reply_text("Thank you! Your mobile number has been registered.")
-                await update.message.reply_text("Now, please choose an object:", reply_markup=reply_markup)
+
+            # Query validation API
+            validation_response = fetch_customer_properties(mobile_number)
+            if validation_response and "customerProperties" in validation_response:
+                properties = validation_response["customerProperties"]
+                reply = "We found objects assigned to you:\n"
+
+                for idx, prop in enumerate(properties, start=1):
+                    code = prop["code"]
+                    obj_type = prop["type"]
+                    deposit, debt = fetch_deposit_and_debt_from_api(code)
+
+                    # Add both debt and deposit to the response
+                    debt_str = f"Debt: {debt}" if debt is not None else "No debt"
+                    deposit_str = f"Deposit: {deposit}" if deposit is not None else "No deposit"
+                    reply += f"{idx}. {code} ({obj_type}): {debt_str}, {deposit_str}\n"
+
+                await update.message.reply_text(reply)
             else:
-                await update.message.reply_text("Invalid mobile number. Please enter a valid number:")
+                await update.message.reply_text(f"No objects are found linked to {mobile_number}.")
+
+            # Show main menu
+            reply_markup = get_object_menu()
+            await update.message.reply_text("Now, you can browse to look other  objects :", reply_markup=reply_markup)
+
+#             mobile_number = update.message.text
+#             logger.info(f"User provided mobile number: {mobile_number}")
+
+#             # Query validation API
+#             validation_response = fetch_customer_properties(mobile_number)
+#             if validation_response and "customerProperties" in validation_response:
+#                 properties = validation_response["customerProperties"]
+#                 reply = "We found objects assigned to you:\n"
+
+#                 for idx, prop in enumerate(properties, start=1):
+#                     code = prop["code"]
+#                     obj_type = prop["type"]
+#                     debt = fetch_debt_for_code(code)
+
+#                     if debt is not None:
+#                         reply += f"{idx}. Debt for {code} ({obj_type}): {debt}\n"
+#                     else:
+#                         reply += f"{idx}. Debt for {code} ({obj_type}): Could not retrieve debt\n"
+
+#                 await update.message.reply_text(reply)
+#             else:
+#                 await update.message.reply_text(f"No objects are found linked to {mobile_number}.")
+
+#             # Show main menu
+#             reply_markup = get_object_menu()
+#             await update.message.reply_text("Now, please choose an object:", reply_markup=reply_markup)
+
+
+# # elif  state == "ask_mobile":
+# #             mobile_number = update.message.text
+# #             logger.info(f"User provided mobile number: {mobile_number}")
+
+# #             # # Validate mobile number
+# #             # if mobile_number.isdigit() and len(mobile_number) == 10:
+# #             #     # Save to the database
+# #             #     save_user(telegram_id, mobile_number)
+
+# #             #     # Update state and show the menu
+# #             #     user_data[telegram_id]["state"] = "object_selection"
+# #             #     reply_markup = get_object_menu()
+# #             #     await update.message.reply_text("Thank you! Your mobile number has been registered.")
+# #             #     await update.message.reply_text("Now, please choose an object:", reply_markup=reply_markup)
+# #             # else:
+# #             #     await update.message.reply_text("Invalid mobile number. Please enter a valid number: +374xxxxxxxx  or 0xxxxxxxx ")
         
-        
+# #                     # Validate mobile number
+# #             if (mobile_number.startswith("+374") and len(mobile_number) == 12 and mobile_number[4:].isdigit()) or \
+# #             (mobile_number.startswith("0") and len(mobile_number) == 9 and mobile_number[1:].isdigit()):
+# #                 # Save to the database
+# #                 save_user(telegram_id, mobile_number)
+# #  #Update state and show the menu
+# #                 user_data[telegram_id]["state"] = "object_selection"
+# #                 reply_markup = get_object_menu()
+          
+# #                 await update.message.reply_text("Thank you! Your mobile number has been registered successfully.")
+# #                 await update.message.reply_text("Now, please choose an object:", reply_markup=reply_markup)
+# #             else:
+# #                 await update.message.reply_text(
+# #                     "Invalid mobile number format. Please enter your mobile number as +374XXXXXXXX or 0XXXXXXXX."
+# #                 )
