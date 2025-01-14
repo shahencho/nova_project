@@ -61,7 +61,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_reply_markup(reply_markup)
 
     elif query.data.startswith("building_flat_"):
-        building = query.data.replace("building_flat_", "").replace("/", "_")
+        building = query.data.replace("building_flat_", "").replace("/", "")
         logger.info(f"User selected building: {building}. Awaiting flat number.")
         user_data[query.from_user.id] = {"state": "entering_flat", "building": building}
         await query.edit_message_text(f"You selected Building {building}. Please enter your flat number:")
