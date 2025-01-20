@@ -83,3 +83,30 @@ def fetch_debt_for_code(code):
     except Exception as e:
         logger.error(f"getPropInfo API call failed for code {code}: {e}")
         return None
+
+
+
+def fetch_property_details(code):
+    """
+    Fetches detailed property information including payment history, debt, and deposit.
+    """
+    global TOKEN
+    if not TOKEN:
+        TOKEN = fetch_auth_token()
+        if not TOKEN:
+            logger.error("Unable to fetch Bearer token. Aborting API call.")
+            return None
+
+    try:
+        url = f"https://condominium-server.technologist.ai/api/Customer/telegram/getPropInfo?code={code}"
+        headers = {"Authorization": f"Bearer {TOKEN}"}
+        logger.info(f"Calling getPropInfo API with URL: {url}")
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+
+        logger.info(f"API response for property details: {data}")
+        return data
+    except Exception as e:
+        logger.error(f"API call failed for property details. Error: {e}")
+        return None

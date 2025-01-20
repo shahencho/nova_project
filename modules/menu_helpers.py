@@ -31,3 +31,11 @@ def get_parking_building_menu():
     buildings = ["46", "46/1", "48", "50", "50/1", "52", "52/1"]
     keyboard = [[InlineKeyboardButton(building, callback_data=f"building_parking_{building}")] for building in buildings]
     return InlineKeyboardMarkup(keyboard)
+
+def Change_Assosiate_mobile():
+    logger.info("Change_Assosiate_mobile .")
+    keyboard = [
+        [InlineKeyboardButton("Change_Assosiate_mobile", callback_data="Change_Assosiate_mobile")],
+
+    ]
+    return InlineKeyboardMarkup(keyboard)
