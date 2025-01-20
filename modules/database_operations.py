@@ -72,16 +72,32 @@ def update_user_details(telegram_id, obj_type=None, unique_payment_code=None, mo
 
 
 def save_user(telegram_id, mobile_number):
+    """
+    Saves or updates a user's details in the database.
+    """
+    # Normalize the mobile number
+    if mobile_number.startswith("+"):
+        mobile_number = mobile_number[1:]  # Remove '+'
+    elif mobile_number.startswith("0"):
+        mobile_number = "374" + mobile_number[1:]  # Replace '0' with '374'
+
     connection = initiate_connection()
     cursor = connection.cursor()
 
-    # Check if user already exists
+    # Check if the user already exists
     query = "SELECT * FROM user_table_inova_new WHERE telegram_id = %s"
     cursor.execute(query, (telegram_id,))
     user = cursor.fetchone()
 
     if user:
-        logger.info(f"User with telegram_id {telegram_id} already exists in the database.")
+        # Update existing user
+        query = """
+        UPDATE user_table_inova_new
+        SET mobile_number = %s
+        WHERE telegram_id = %s
+        """
+        cursor.execute(query, (mobile_number, telegram_id))
+        logger.info(f"Updated mobile number for telegram_id {telegram_id}: {mobile_number}")
     else:
         # Insert new user
         query = """
@@ -89,9 +105,9 @@ def save_user(telegram_id, mobile_number):
         VALUES (%s, %s)
         """
         cursor.execute(query, (telegram_id, mobile_number))
-        connection.commit()
-        logger.info(f"New user with telegram_id {telegram_id} has been added to the database.")
+        logger.info(f"Saved new user with telegram_id {telegram_id} and mobile_number {mobile_number}")
 
+    connection.commit()
     cursor.close()
     connection.close()
 
