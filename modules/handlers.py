@@ -1,39 +1,58 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from menu_helpers import get_object_menu, get_flat_building_menu
-from api_helpers import fetch_deposit_and_debt_from_api, fetch_customer_properties, fetch_debt_for_code, fetch_property_details
+from api_helpers import fetch_deposit_and_debt_from_api, fetch_customer_properties, fetch_debt_for_code, fetch_property_details, generate_financial_status_message, generate_financial_status_message2
 from database_operations import check_user_exists, save_user, update_user_details, validate_and_fetch_mobile_number
-from menu_helpers import get_public_space_building_menu
+from menu_helpers import Change_Assosiate_mobile, get_main_menu, display_blady_button
 import logging
-from menu_helpers import get_object_menu, get_parking_building_menu
+import time
+
 from translations import TRANSLATIONS  # Import the translations
 
+from telegram import KeyboardButton, ReplyKeyboardMarkup
+
+from telegram.error import TimedOut  # Import the TimedOut exception
+import httpx  # Import httpx if you're using it in your code
 
 logger = logging.getLogger(__name__)
 
 user_data = {}
 
 
+import asyncio
+
+
+logger = logging.getLogger(__name__)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    start_time = time.time()
+
     telegram_id = update.message.from_user.id
+
+    if telegram_id not in user_data:
+        user_data[telegram_id] = {"state": "step0_register_mobile"}  # Initialize user data
+        logger.info(f"Initialized user data for telegram_id={telegram_id}")
+
+    
     first_name = update.message.from_user.first_name  # Retrieve the user's first name
     logger.info(f"Received /start command from telegram_id={telegram_id} with name={first_name}")
-    
+
+
+
+
     # Fetch and format the welcome message
     welcome_message = TRANSLATIONS["welcome_message"].format(name=first_name)
 
     user = check_user_exists(telegram_id)
-    
+    logger.info(f"User check returned: {user}")
+
     if user:
         logger.info("User found in database. Proceeding to main menu.")
         await update.message.reply_text(welcome_message)
         mobile_number = user.get("mobile_number", "Not available")
 
-    # Combine the messages into one
-        x= fetch_customer_properties(mobile_number)
-
-       
+        x = fetch_customer_properties(mobile_number)
+        logger.info(f"Customer properties fetched: {x}")
 
         # Extract relevant properties
         customer_properties = x.get("customerProperties", [])
@@ -43,565 +62,43 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Combine the message
         message = (
-            f"{TRANSLATIONS['mobile_saved_in_db_found']} : {mobile_number}\n\n"
-            f"{TRANSLATIONS['found_objects']}\n{property_details}"
-      
-        )
 
-       # message = f"{TRANSLATIONS['mobile_saved_in_db_found']} : Mobile Number: {mobile_number} fetch_customer_properties: {x} "
+            f"{TRANSLATIONS['found_objects']}\n{property_details}"
+            # f"{TRANSLATIONS['mobile_saved_in_db_found']} : {mobile_number}\n\n"
+            
+        )
+        
+        message1 = f"{TRANSLATIONS['mobile_saved_in_db_found']} : {mobile_number}\n\n"
+
+
+        await update.message.reply_text(message1)
+
+        await display_properties(x, update)
+
         await update.message.reply_text(message)
 
-        
-
-
-        reply_markup = InlineKeyboardMarkup([
-            [InlineKeyboardButton(TRANSLATIONS["yes_show_objects"], callback_data="show_my_object")],
-            [InlineKeyboardButton(TRANSLATIONS["change_mobile"], callback_data="Change_Assosiate_mobile")]
-
-        ])
+        reply_markup = get_main_menu()
         await update.message.reply_text(TRANSLATIONS["ask_to_view_details"], reply_markup=reply_markup)
 
+        user_data[telegram_id] = {"state": "step1_mobile_register_succesfully"}  # Set state after successful registration
+
     else:
-        user_data[telegram_id] = {"state": "ask_mobile"}
+        user_data[telegram_id] = {"state": "step0_register_mobile"}  # Set state for first-time login
         await update.message.reply_text(welcome_message)
         await update.message.reply_text(TRANSLATIONS["ask_mobile_number"])
-
-
-from translations import TRANSLATIONS
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    logger.info(f"Callback data received: {query.data}")
-
-    if query.data == "object_flat":
-        logger.info("User selected Flat.")
-        user_data[query.from_user.id] = {"state": "selecting_building", "object": "flat"}
-        await query.edit_message_text(TRANSLATIONS["choose_flat_building"])
-        reply_markup = get_flat_building_menu()
-        await query.edit_message_reply_markup(reply_markup)
-
-    elif query.data.startswith("building_flat_"):
-        building = query.data.replace("building_flat_", "").replace("/", "-")
-        logger.info(f"User selected building: {building}. Awaiting flat number.")
-        user_data[query.from_user.id] = {"state": "entering_flat", "building": building}
-        await query.edit_message_text(TRANSLATIONS["enter_flat_number"].format(building=building))
-
-    elif query.data == "object_public_space":
-        logger.info("User selected Public Space.")
-        user_data[query.from_user.id] = {"state": "selecting_building", "object": "public_space"}
-        await query.edit_message_text(TRANSLATIONS["choose_public_space_building"])
-        reply_markup = get_public_space_building_menu()
-        await query.edit_message_reply_markup(reply_markup)
-
-    elif query.data.startswith("building_public_space_"):
-        building = query.data.replace("building_public_space_", "").replace("/", "-")
-        logger.info(f"User selected building: {building}. Awaiting public space ID.")
-        user_data[query.from_user.id] = {"state": "entering_public_space", "building": building}
-        await query.edit_message_text(TRANSLATIONS["enter_public_space_id"].format(building=building))
-
-    elif query.data == "object_parking":
-        logger.info("User selected Parking.")
-        user_data[query.from_user.id] = {"state": "selecting_building", "object": "parking"}
-        await query.edit_message_text(TRANSLATIONS["choose_parking_building"])
-        reply_markup = get_parking_building_menu()
-        await query.edit_message_reply_markup(reply_markup)
-
-    elif query.data.startswith("building_parking_"):
-        building = query.data.replace("building_parking_", "").replace("/", "-")
-        logger.info(f"User selected building: {building}. Awaiting parking ID.")
-        user_data[query.from_user.id] = {"state": "entering_parking", "building": building}
-        await query.edit_message_text(TRANSLATIONS["enter_parking_id"].format(building=building))
-
-    elif query.data == "object_uniq_payment_code":
-        logger.info("User selected Unique Payment Code.")
-        user_data[query.from_user.id] = {"state": "entering_unique_code"}
-        await query.edit_message_text("You selected Unique Payment Code. Please enter your unique code:")
-
-    elif query.data == "show_my_object":
-        # Retrieve the user's stored mobile number from the database
-        user = check_user_exists(query.from_user.id)
-        if user and user.get("mobile_number"):
-            mobile_number = user["mobile_number"]
-            logger.info(f"Handling 'show_my_object' for mobile number: {mobile_number}")
-            
-            # Call ShowMyObject_based_on_mobile_number with the retrieved mobile number and update object
-            await ShowMyObject_based_on_mobile_number(mobile_number, update)
-        else:
-            logger.warning(f"No mobile number found for user {query.from_user.id}")
-            await query.edit_message_text("No mobile number linked to your account. Please restart and provide a mobile number.")
-
     
-    elif query.data.startswith("view_details_"):
-        # Extract the unique code from the callback data
-        code = query.data.replace("view_details_", "")
-        logger.info(f"Handling details for object code: {code}")
-
-        # Fetch detailed property info
-        details = fetch_property_details(code)
-
-        if details and isinstance(details, dict):
-            logger.info(f"Fetched property details for {code}: {details}")
-
-            # Generate payment history
-            transactions = details.get("transactionsPayInfo", [])
-            if transactions:
-                history = "\n".join([
-                    f"{trans['payedDate']}: {trans['payedAmount']}" for trans in transactions
-                ])
-                # message = f"Payment History for {code}:\n{history}"
-                message = TRANSLATIONS["payment_history"].format(code=code, history=history)
-
-            else:
-                # message = f"Payment History for {code}: No transactions found."
-                message = TRANSLATIONS["no_transactions"].format(code=code)
+    logger.info(f"Completed /start command in {time.time() - start_time:.2f} seconds")
 
 
-            # Add Back button
-            # back_button = [[InlineKeyboardButton("Back to Objects", callback_data="go_back_to_objects")]]
-            back_button = [[InlineKeyboardButton(TRANSLATIONS["back_to_objects"], callback_data="go_back_to_objects")]]
-
-            reply_markup = InlineKeyboardMarkup(back_button)
-            await query.edit_message_text(message, reply_markup=reply_markup)
-        else:
-            logger.error(f"Failed to fetch details for code: {code}")
-            await query.edit_message_text("Failed to fetch details. Please try again later.")
-
-    
-
-    elif query.data == "Change_Assosiate_mobile":
-        logger.info("User opted to change associated mobile number.")
-        user_data[query.from_user.id] = {"state": "changing_mobile"}
-        # await query.edit_message_text("Please enter your new phone number in the format +374xxxxxxxx or 0xxxxxxxx.")
-        # await update.message.reply_text(TRANSLATIONS["enter_new_mobile"])
-        await update.callback_query.edit_message_text(TRANSLATIONS["enter_new_mobile"])
-
-
-
-    elif query.data == "go_back_to_objects":
-        logger.info("User clicked Back to Objects.")
-        user = check_user_exists(query.from_user.id)
-        if user and user.get("mobile_number"):
-            await ShowMyObject_based_on_mobile_number(user["mobile_number"], update)
-        else:
-            logger.warning(f"No mobile number found for user {query.from_user.id}")
-            await query.edit_message_text("No mobile number linked to your account. Please restart and provide a mobile number.")
-
-
-
-
-
-import re
-
-def validate_mobile_number(mobile_number):
+async def copy_of_ShowMyObject_based_on_mobile_number(mobile_number_param, update):
     """
-    Validates a mobile number to match the formats:
-    +374XXXXXXXX or 0XXXXXXXX.
+    Process the mobile number provided by the user and show their objects using KeyboardButton.
     """
-    pattern = r"^\+374\d{8}$|^0\d{8}$"
-    return bool(re.match(pattern, mobile_number))
+    # logger.info(f"Starting copy_of_ShowMyObject_based_on_mobile_number for {mobile_number_param}")
 
-# Test cases
-print(validate_mobile_number("+37491995901"))  # True
-print(validate_mobile_number("091995901"))     # True
-print(validate_mobile_number("+3749199590"))   # False
-print(validate_mobile_number("91995901"))      # False
+    start_time = time.time()
+    logger.info(f"Starting copy_of_ShowMyObject_based_on_mobile_number for {mobile_number_param}")
 
-async def respond_with_payment_info(update, building, object_number, unique_code, deposit, debt):
-    """
-    Sends detailed payment response to the user based on deposit and debt.
-
-    Args:
-        update (Update): The Telegram Update object.
-        building (str): The building number.
-        object_number (str): The flat/public space/parking ID.
-        unique_code (str): The unique code for the object.
-        deposit (float): The deposit amount.
-        debt (float): The debt amount.
-    """
-    if debt > 0:
-        return (
-            f"Building number: {building}, object number: {object_number}, code for this object is: {unique_code}, "
-            f"and debt = {debt}. You should hurry up and do the payment ASAP!"
-        )
-    elif debt == 0 and deposit > 0:
-        return (
-            f"Building number: {building}, object number: {object_number}, code for this object is: {unique_code}, "
-            f"Thanks for not having any debt!"
-        )
-    elif debt == 0 and deposit == 0:
-        return (
-            f"Building number: {building}, object number: {object_number}, code for this object is: {unique_code}, "
-            f"Thanks for not having any debt!"
-        )
-    else:
-        return (
-            f"Sorry, we couldn't fetch details for the provided object:\n"
-            f"Building number: {building}, object number: {object_number}, code for this object is: {unique_code}. "
-            f"Please try again."
-        )
-
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from api_helpers import fetch_customer_properties, fetch_debt_for_code
-import logging
-
-logger = logging.getLogger(__name__)
-
-
-
-async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    telegram_id = update.message.from_user.id
-    logger.info(f"Received text message from telegram_id={telegram_id}")
-
-    if telegram_id in user_data:
-        state = user_data[telegram_id].get("state")
-
-        if state == "entering_flat":
-            flat_number = update.message.text
-            building = user_data[telegram_id].get("building")
-            logger.info(f"aaaaaaaaaaassssssbuilding before trasnfor : {building}")
-            transformed_building = building.replace("-", "")  # Remove `/` for flat
-            unique_code = f"A-{transformed_building}-{flat_number}"  # Construct unique code
-            logger.info(f"Constructed unique code for Flat: {unique_code}")
-            deposit, debt = fetch_deposit_and_debt_from_api(unique_code)
-            await respond_with_payment_info(update, transformed_building, flat_number, unique_code, deposit, debt)
-            del user_data[telegram_id]
-            reply_markup = get_object_menu()
-            await update.message.reply_text("Do you want to look at other information?", reply_markup=reply_markup)
-
-           
-
-
-        elif state == "entering_parking":
-            parking_id = update.message.text
-            building = user_data[telegram_id].get("building")
-            transformed_building = building.replace("-", "")  # Correct logic: Remove `/`
-            unique_code = f"P-{transformed_building}-{parking_id}"  # Correct unique code
-            logger.info(f"Constructed unique code for Parking: {unique_code}")
-            deposit, debt = fetch_deposit_and_debt_from_api(unique_code)
-            await respond_with_payment_info(update, transformed_building, parking_id, unique_code, deposit, debt)
-            del user_data[telegram_id]
-            reply_markup = get_object_menu()
-            await update.message.reply_text("Do you want to look at other information?", reply_markup=reply_markup)
-
-        elif state == "entering_public_space":
-            public_space_id = update.message.text
-            building = user_data[telegram_id].get("building")
-            transformed_building = building.replace("-", "-")  # Correct logic: Replace `/` with `-`
-            unique_code = f"C-{transformed_building}-{public_space_id}"  # Correct unique code
-            logger.info(f"Constructed unique code for Public Space: {unique_code}")
-            deposit, debt = fetch_deposit_and_debt_from_api(unique_code)
-            await respond_with_payment_info(update, transformed_building, public_space_id, unique_code, deposit, debt)
-            del user_data[telegram_id]
-            reply_markup = get_object_menu()
-            await update.message.reply_text("Do you want to look at other information?", reply_markup=reply_markup)
-
-        elif state == "entering_unique_code":
-            unique_code = update.message.text
-            logger.info(f"User entered unique payment code: {unique_code}")
-            
-            # Fetch deposit and debt using the unique code
-            deposit, debt = fetch_deposit_and_debt_from_api(unique_code)
-            await respond_with_payment_info(update, "-", "-", unique_code, deposit, debt)  # Building and object_number are placeholders
-            del user_data[telegram_id]
-            reply_markup = get_object_menu()
-            await update.message.reply_text("Do you want to look at other information?", reply_markup=reply_markup)
-
-        elif state == "ask_mobile":
-            new_mobile_number = update.message.text
-            logger.info(f"User provided new mobile number: {new_mobile_number}")
-
-            # Validate and fetch mobile number
-            is_valid = await validate_and_fetch_mobile_number(new_mobile_number)
-            if not is_valid:
-                await update.message.reply_text(TRANSLATIONS["ask_mobile_number"])
-                return
-
-            # Save valid mobile number in the database
-            save_user(telegram_id, new_mobile_number)
-            logger.info(f"Saved mobile number {new_mobile_number} for user telegram_id={telegram_id}")
-
-            # await update.message.reply_text(f"Your mobile number {new_mobile_number} has been saved.")
-            await update.message.reply_text(TRANSLATIONS["mobile_number_saved"].format(new_mobile_number=new_mobile_number))
-
-            await ShowMyObject_based_on_mobile_number(new_mobile_number, update)
-
-
-        elif state== "show_my_object":
-            # Update user state (optional, if needed for tracking)
-            user_data[query.from_user.id] = {"state": "showing_objects"}
-
-        elif state == "changing_mobile":
-
-            new_mobile_number = update.message.text
-            logger.info(f"User provided new mobile number: {new_mobile_number}")
-
-            # Validate and fetch mobile number
-            is_valid = await validate_and_fetch_mobile_number(new_mobile_number)
-            if not is_valid:
-                await update.message.reply_text(TRANSLATIONS["ask_mobile_number"])
-                return
-
-            # Update the mobile number in the database
-            update_user_details(telegram_id, mobile_number=new_mobile_number)
-            logger.info(f"Updated mobile number in the database for telegram_id={telegram_id}")
-
-            # await update.message.reply_text(f"Your new mobile number {new_mobile_number} has been saved.")
-
-            await update.message.reply_text(TRANSLATIONS["mobile_number_saved"].format(new_mobile_number=new_mobile_number))
-
-
-            await ShowMyObject_based_on_mobile_number(new_mobile_number, update)
-        
-
-def generate_financial_status_message(code, deposit, debt):
-    """
-    Generates a financial status message based on deposit and debt values.
-    """
-    logger.info(f"debt: {debt}, deposit: {deposit}")
-
-    if debt == 0 and deposit == 0:
-        # Case 1: No debt, no deposit - we are good.
-        return TRANSLATIONS["case_no_debt_no_deposit"].format(code=code)
-    elif debt < 0 and deposit == 0:
-        # Case 2: There is a debt, deposit is 0
-        return TRANSLATIONS["case_debt_no_deposit"].format(code=code, debt=debt)
-    elif debt == 0 and deposit > 0:
-        # Case 3: Positive Deposit, no Debt
-        return TRANSLATIONS["case_no_debt_with_deposit"].format(code=code, deposit=deposit)
-    elif debt > 0 and deposit > 0:
-        # Case 4: Positive Deposit, Positive Debt
-        return TRANSLATIONS["case_debt_and_deposit"].format(code=code, deposit=deposit, debt=debt)
-
-
-
-    # if debt == 0 and deposit == 0:
-    #     # Case 1: n dept , no deposit - we r good.
-        
-    #             return f"{code} DEBT is 0,and deposit is 0, meaning all payments are up to date. Thanks for your timely payments!"
-    # elif debt < 0 and deposit == 0:
-    #     # Case 2: there is a debt in this case we will always exepct deposit -0 
-    #     return f"{code} You have debt , amount debt is :  {debt} . Please do payments ASAP."
-    # elif debt == 0 and deposit > 0:
-    #     # Case 4: Positive Deposit, no Debt
-    #     return f"{code} You have deposit, deposit  amount = {deposit}. Thanks for closing payment on time."
-    # elif debt > 0 and deposit > 0:
-    #     # Case 4: Positive Deposit, Positive Debt
-    #     return f"{code} You have deposit amount = {deposit}.  You have debt amount = {debt}" #i don't think these will be a case 
-        
-
-# async def handle_mobile_number(update, context):
-#     """
-#     Handles the mobile number input to fetch user objects and display dynamic buttons.
-#     """
-#     telegram_id = update.message.from_user.id
-#     mobile_number = update.message.text
-
-#     # Normalize mobile number
-#     if mobile_number.startswith("+"):
-#         mobile_number = mobile_number[1:]  # Remove '+'
-#     elif mobile_number.startswith("0"):
-#         mobile_number = "374" + mobile_number[1:]  # Replace '0' with '374'
-
-#     # Fetch properties
-#     validation_response = fetch_customer_properties(mobile_number)
-    
-#     if validation_response and "customerProperties" in validation_response:
-#         properties = validation_response["customerProperties"]
-        
-#         # Generate buttons and status messages for each object
-#         keyboard = []
-#         status_messages = []
-#         for prop in properties:
-#             code = prop["code"]
-#             obj_type = prop["type"]
-
-#             # Fetch detailed property info for deposit and debt
-#             details = fetch_property_details(code)
-#             if details:
-#                 deposit = details.get("deposit", 0)
-#                 debt = details.get("debt", 0)
-
-#                 # Generate financial status message
-#                 status_message = generate_financial_status_message(code, deposit, debt)
-#                 status_messages.append(status_message)
-
-#                 # Log the status message for debugging
-#                 logger.info(f"Generated status message for {code}: {status_message}")
-
-#                 # Add button for object
-#                 button_text = f"{code} ({obj_type})"
-#                 keyboard.append([InlineKeyboardButton(button_text, callback_data=f"view_details_{code}")])
-
-#         # Send status messages to user
-#         if status_messages:
-#             await update.message.reply_text("\n".join(status_messages))
-
-#         reply_markup = InlineKeyboardMarkup(keyboard)
-#         await update.message.reply_text(
-#             "We found objects assigned to you. Select one to view details:",
-#             reply_markup=reply_markup
-#         )
-
-#     else:
-#         await update.message.reply_text("No objects found linked to this mobile number.")
-
-
-
-async def handle_object_selection(update, context):
-    """
-    Handles the selection of an object to display its payment history.
-    """
-    query = update.callback_query
-    await query.answer()
-
-    # Extract object code from callback data
-    callback_data = query.data
-    if callback_data.startswith("view_details_"):
-        code = callback_data.replace("view_details_", "")
-
-        logger.info(f"Fetching payment history for object code: {code}")
-
-        # Fetch payment history
-        details = fetch_property_details(code)
-
-        if details and isinstance(details, dict):
-            logger.info(f"Property details retrieved successfully for code {code}: {details}")
-
-            transactions = details.get("transactionsPayInfo", [])
-            
-            if transactions:
-                # Format the payment history
-                history = "\n".join([
-                    f"{trans['payedDate']}: {trans['payedAmount']}" for trans in transactions
-                ])
-                message = f"Payment History for {code}:\n{history}"
-            else:
-                message = f"Payment History for {code}: No transactions found."
-
-            await query.edit_message_text(message)
-        else:
-            logger.error(f"Failed to fetch property details for code {code}. Response: {details}")
-            # await query.edit_message_text("Failed to fetch property details. Please try again later.")
-            await update.message.reply_text(TRANSLATIONS["fetch_details_failed"])
-
-
-# ===========
-
-async def handle_mobile_number(update, context):
-    """
-    Handles the mobile number input to fetch user objects and display dynamic buttons.
-    """
-    telegram_id = update.message.from_user.id
-
-    # Check if user exists in the database
-    user = check_user_exists(telegram_id)
-
-    if user:
-        # Existing user
-        stored_mobile_number = user.get("mobile_number")
-        await update.message.reply_text(
-            f"Hey, I remember you! Last time, you used the following mobile number: {stored_mobile_number}.\n"
-            "If your mobile number has changed, enter a new one. Otherwise, here are your objects.\n"
-            "format -> +374xxxxxxxx կամ 0xxxxxxxx"
-        )
-
-        # Wait for new input or use stored mobile number
-        context.user_data["mobile_number"] = stored_mobile_number
-        # If user responds with a new number, it will be handled via process_mobile_number
-    else:
-        # New user prompt
-        await update.message.reply_text(
-            "Խնդրում ենք մուտքագրեք ձեր հեռախոսահամարը, որը գրանված է համատիրության գրանցամատյանում այս ֆորմատով՝ +374xxxxxxxx կամ 0xxxxxxxx\n"
-            "to test use - < 37491995901 > <37494777513> < 37455024479 > < 37494555585 >"
-        )
-
-
-async def process_mobile_number(update, context):
-    """
-    Process the mobile number provided by the user.
-    """
-    telegram_id = update.message.from_user.id
-    mobile_number = update.message.text
-
-    # Normalize mobile number
-    if mobile_number.startswith("+"):
-        mobile_number = mobile_number[1:]  # Remove '+'
-    elif mobile_number.startswith("0"):
-        mobile_number = "374" + mobile_number[1:]  # Replace '0' with '374'
-
-    # Save or update the user's mobile number in the database
-    save_user(telegram_id, mobile_number)
-    context.user_data["mobile_number"] = mobile_number
-
-    # Fetch properties
-    validation_response = fetch_customer_properties(mobile_number)
-
-    if validation_response and "customerProperties" in validation_response:
-        properties = validation_response["customerProperties"]
-
-        # Generate buttons and status messages for each object
-        keyboard = []
-        status_messages = []
-        for prop in properties:
-            code = prop["code"]
-            obj_type = prop["type"]
-
-            # Fetch detailed property info for deposit and debt
-            details = fetch_property_details(code)
-            if details:
-                deposit = details.get("deposit", 0)
-                debt = details.get("debt", 0)
-
-                # Generate financial status message
-                status_message = generate_financial_status_message(code, deposit, debt)
-                status_messages.append(status_message)
-
-                # Log the status message for debugging
-                logger.info(f"Generated status message for {code}: {status_message}")
-
-                # Add button for object
-                button_text = f"{code} ({obj_type})"
-                keyboard.append([InlineKeyboardButton(button_text, callback_data=f"view_details_{code}")])
-
-        # Send status messages to user
-        if status_messages:
-            await update.message.reply_text("\n".join(status_messages))
-
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text(
-            TRANSLATIONS["found_objects"]
-,
-            reply_markup=reply_markup
-        )
-
-    else:
-        await update.message.reply_text(TRANSLATIONS["no_objects_found"])
-
-
-
-
-
-async def ShowMyObject_based_on_mobile_number(mobile_number_param, update):
-    """
-    Process the mobile number provided by the user and show their objects.
-    """
     # Normalize mobile number
     if mobile_number_param.startswith("+"):
         mobile_number_param = mobile_number_param[1:]  # Remove '+'
@@ -610,6 +107,7 @@ async def ShowMyObject_based_on_mobile_number(mobile_number_param, update):
 
     # Fetch properties
     validation_response = fetch_customer_properties(mobile_number_param)
+    logger.info(f"Fetched properties for {mobile_number_param}: {validation_response}")
 
     if validation_response and "customerProperties" in validation_response:
         properties = validation_response["customerProperties"]
@@ -620,15 +118,22 @@ async def ShowMyObject_based_on_mobile_number(mobile_number_param, update):
         for prop in properties:
             code = prop["code"]
             obj_type = prop["type"]
+            apartment = prop["apartment"]
+            flat_number = prop["number"]
+
 
             # Fetch detailed property info for deposit and debt
             details = fetch_property_details(code)
+            logger.info(f"Fetched details for {code}: {details}")
             if details:
                 deposit = details.get("deposit", 0)
                 debt = details.get("debt", 0)
+                
 
+
+                current_code = details.get("code", 0)
                 # Generate financial status message
-                status_message = generate_financial_status_message(code, deposit, debt)
+                status_message = generate_financial_status_message(code, deposit, debt, apartment, obj_type, flat_number)
                 status_messages.append(status_message)
 
                 # Log the status message for debugging
@@ -636,42 +141,390 @@ async def ShowMyObject_based_on_mobile_number(mobile_number_param, update):
 
                 # Add button for object
                 button_text = f"{code} ({obj_type})"
-                keyboard.append([InlineKeyboardButton(button_text, callback_data=f"view_details_{code}")])
+                keyboard.append([KeyboardButton(button_text)])
 
         # Add Change_Assosiate_mobile button
-        keyboard.append([InlineKeyboardButton(TRANSLATIONS["change_mobile"], callback_data="Change_Assosiate_mobile")])
+        # keyboard.append([KeyboardButton(TRANSLATIONS["change_mobile"])]);
+        # Add Back button
+
+        keyboard.append([KeyboardButton(TRANSLATIONS["Back1"]), KeyboardButton(TRANSLATIONS["Refresh"])])
+
+        
+        
 
         # Send status messages to user
         if status_messages:
-            if update.callback_query:
-                # Handle callback query context
-                await update.callback_query.message.reply_text("\n".join(status_messages))
-            else:
-                # Handle text message context
-                await update.message.reply_text("\n".join(status_messages))
+            await update.message.reply_text("\n".join(status_messages))
 
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        if update.callback_query:
-            await update.callback_query.message.reply_text(
-                TRANSLATIONS["found_objects"],
-                reply_markup=reply_markup
-            )
-        else:
-            await update.message.reply_text(
-                TRANSLATIONS["found_objects"],
-                reply_markup=reply_markup
-            )
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        logger.info(f"Sending keyboard with objects: {keyboard}")
+        await update.message.reply_text(
+            TRANSLATIONS["found_objects"],
+            reply_markup=reply_markup
+        )
+
+        # Update state and store previous state
+        telegram_id = update.message.from_user.id
+        user_data[telegram_id]["prev_state"] = user_data[telegram_id].get("state", "step1_mobile_register_succesfully") # can be from "back function "
+        # user_data[telegram_id]["prev_state"] = user_data[telegram_id].get("state")# can be from "back function "
+        user_data[telegram_id]["state"] = "step2_mobile_register_succesfully_show_my_objects"
+
+        logger.info(f"\n in  copy_of_ShowMyObject_based_on_mobile_number  state =  {user_data[telegram_id]["state"] }and prev_state = {user_data[telegram_id]["prev_state"]}\n")
+
+        logger.info(f"Completed copy_of_ShowMyObject_based_on_mobile_number in {time.time() - start_time:.2f} seconds")
+
+
     else:
+        logger.warning(f"No objects found for {mobile_number_param}")
         # No objects found, prompt user to change mobile number
-        keyboard = [[InlineKeyboardButton(TRANSLATIONS["change_mobile"], callback_data="Change_Assosiate_mobile")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        if update.callback_query:
-            await update.callback_query.message.reply_text(
-                TRANSLATIONS["ask_mobile_number"],
-                reply_markup=reply_markup
-            )
+        keyboard = [[KeyboardButton(TRANSLATIONS["change_mobile"])]]
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        await update.message.reply_text(
+            TRANSLATIONS["ask_mobile_number"],
+            reply_markup=reply_markup
+        )
+
+async def show_payment_history(code, update):
+    """
+    Fetch and display the payment history for the selected object code.
+    """
+    logger.info(f"Fetching payment history for object code: {code}")
+
+    # Fetch detailed property info
+    details = fetch_property_details(code)
+    logger.info(f"Fetched property details for {code}: {details}")
+
+    if details and isinstance(details, dict):
+
+        # Generate payment history
+        transactions = details.get("transactionsPayInfo", [])
+        if transactions:
+            history = "\n".join([
+                f"{trans['payedDate']}: {trans['payedAmount']}" for trans in transactions
+            ])
+            message = TRANSLATIONS["payment_history"].format(code=code, history=history)
         else:
-            await update.message.reply_text(
-                TRANSLATIONS["ask_mobile_number"],
-                reply_markup=reply_markup
-            )
+            message = TRANSLATIONS["no_transactions"].format(code=code)
+
+        # Send payment history to the user
+        await update.message.reply_text(message)
+
+        # Update user state to payment history
+        telegram_id = update.message.from_user.id
+        user_data[telegram_id]["prev_state"] = "step2_mobile_register_succesfully_show_my_objects"
+        user_data[telegram_id]["state"] = "step4_mobile_register_succesfully_show_my_objects_show_payment_history"
+
+        state1 = user_data[telegram_id].get("state")
+        prev_state1 = user_data[telegram_id].get("prev_state")
+        logger.info(f"printed from show payment history Current state: {state1}, Current prev_state: {prev_state1}")
+    else:
+        logger.error(f"Failed to fetch details for code: {code}")
+        await update.message.reply_text(TRANSLATIONS["error_fetching_details"])
+
+async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    start_time = time.time()
+
+
+    telegram_id = update.message.from_user.id
+    user_input = update.message.text
+    logger.info(f"Received text message from telegram_id={telegram_id}: {user_input}")
+
+    state1 = user_data[telegram_id].get("state")
+    prev_state1 = user_data[telegram_id].get("prev_state")
+    logger.info(f"Current state: {state1}, Current prev_state: {prev_state1}")
+
+    logger.info(f"Received text message from telegram_id={telegram_id}: {user_input}")
+
+
+    if telegram_id in user_data:
+        state = user_data[telegram_id].get("state")
+        logger.info(f"Current state: {state}, User input: {user_input}")
+
+        if user_input == TRANSLATIONS["change_mobile"]:
+            logger.info(f"User selected 'change_mobile' for telegram_id={telegram_id}")
+            await update.message.reply_text(TRANSLATIONS["ask_mobile_number"])
+            # Update user state to ask for a mobile number
+            user_data[telegram_id]["prev_state"] = user_data[telegram_id].get("state", "step0_register_mobile")
+            user_data[telegram_id]["state"] = "step0_register_mobile"
+
+
+
+
+            return
+
+        elif user_input == TRANSLATIONS["Refresh"]:
+            logger.info(f"User selected 'Refresh' for telegram_id={telegram_id}")
+            await start(update, context)
+            
+            logger.info(f"User selected 'Refresh' for telegram_id={telegram_id}")
+            user = check_user_exists(telegram_id)
+            logger.info(f"User data fetched: {user}")
+            if user and user.get("mobile_number"):
+                mobile_number = user["mobile_number"]
+                logger.info(f"Handling 'show_my_object' for mobile number: {mobile_number}")
+                
+                # Save previous state before calling the object list
+                user_data[telegram_id]["prev_state"] = user_data[telegram_id].get("state", "step1_mobile_register_succesfully")
+                await  copy_of_ShowMyObject_based_on_mobile_number(mobile_number, update)
+
+
+            return
+
+
+
+        elif user_input == TRANSLATIONS["yes_show_objects"]:
+            logger.info(f"User selected 'yes_show_objects' for telegram_id={telegram_id}")
+            user = check_user_exists(telegram_id)
+            logger.info(f"User data fetched: {user}")
+            if user and user.get("mobile_number"):
+                mobile_number = user["mobile_number"]
+                logger.info(f"Handling 'show_my_object' for mobile number: {mobile_number}")
+                
+                # Save previous state before calling the object list
+                user_data[telegram_id]["prev_state"] = user_data[telegram_id].get("state", "step1_mobile_register_succesfully")
+                await  copy_of_ShowMyObject_based_on_mobile_number(mobile_number, update)
+               
+
+            else:
+                logger.warning(f"No mobile number found for user {telegram_id}")
+                await update.message.reply_text(TRANSLATIONS["no_mobile_number_linked"])
+
+         
+
+        elif user_input.startswith("A-") or user_input.startswith("P-") or user_input.startswith("C-"):
+            
+            logger.info(f"User selected object: {user_input}")
+            code = user_input.split()[0]  # Extract the code (e.g., "A-48-2") from the button text
+            await show_payment_history(code, update)
+             # Call the function to display "Blady" button
+            await display_blady_button(update)
+            logger.info(f"Processed object selection in {time.time() - start_time:.2f} seconds")
+
+            return
+
+            
+
+        elif user_input == "Back1":
+
+            logger.info(f" user_input == Back1  Call Start!   ={user_input}")
+                
+            await start(update, context)
+            return
+
+
+        elif user_input == "Blady":
+
+            logger.info(f" user_input == Blady      ={user_input}")
+                
+            mobile_number = get_associated_with_this_telegram_id_mobile_number(telegram_id) #iif user came to back from step4 , his mobile number must be in db
+
+            logger.info(f" user_input == BladyReturning to object list for mobile number: {mobile_number}")
+            await copy_of_ShowMyObject_based_on_mobile_number(mobile_number, update)
+           
+            return
+        
+        elif user_input == "Back12222":
+            prev_state = user_data[telegram_id].get("prev_state")
+            if not prev_state:
+                logger.warning(f"No previous state found for telegram_id={telegram_id}. Inferring fallback state.")
+                # Infer fallback based on current state
+                if state == "step4_mobile_register_succesfully_show_my_objects_show_payment_history":
+                    prev_state = "step2_mobile_register_succesfully_show_my_objects"
+                elif state == "step2_mobile_register_succesfully_show_my_objects":
+                    prev_state = "step1_mobile_register_succesfully"
+                else:
+                    prev_state = "step0_register_mobile"  # Default fallback for unexpected cases
+
+            logger.info(f"User selected 'Back' for telegram_id={telegram_id}")
+            logger.info(f"prev_state ={prev_state} , current state is = {state}" )
+
+
+            if prev_state == "step1_mobile_register_succesfully":
+                logger.info(f" lets skip this now  prev_state== step1_mobile_register_succesfully")    
+                # reply_markup = get_main_menu()
+                # await update.message.reply_text(TRANSLATIONS["back_to_main_menu"], reply_markup=reply_markup)
+
+            elif prev_state == "step2_mobile_register_succesfully_show_my_objects":
+                # mobile_number = user_data[telegram_id].get("mobile_number")
+
+                mobile_number = get_associated_with_this_telegram_id_mobile_number(telegram_id) #iif user came to back from step4 , his mobile number must be in db
+
+                if mobile_number is None:
+                    logger.info(f"something terrible went wrong. no mobile in db... {mobile_number}")    
+                    return 
+
+
+                logger.info(f"Returning to object list for mobile number: {mobile_number}")
+                await copy_of_ShowMyObject_based_on_mobile_number(mobile_number, update)
+                # get_step1_buttons()
+                # reply_markup = get_main_menu()
+
+            elif prev_state == "step4_mobile_register_succesfully_show_my_objects_show_payment_history":
+                
+                logger.info(f" Start called! prev_state == step4_mobile_register_succesfully_show_my_objects_show_payment_history step4_mobile_register_succesfully_show_my_objects_show_payment_history ={prev_state}")
+                
+                await start(update, context)
+                # mobile_number = get_associated_with_this_telegram_id_mobile_number(telegram_id) #iif user came to back from step4 , his mobile number must be in db
+
+                # if mobile_number is None:
+                #     logger.info(f"something terrible went wrong. no mobile in db... {mobile_number}")    
+                #     return 
+                # logger.info(f"Returning to object list for mobile number: {mobile_number}")
+                # await copy_of_ShowMyObject_based_on_mobile_number(mobile_number, update)..
+                 # get_step1_buttons()
+                # reply_markup = get_main_menu()
+                # user_data[telegram_id]["state"] = prev_state
+
+
+
+            
+            return
+
+       
+        elif state == "step0_register_mobile" or user_input == TRANSLATIONS["change_mobile"]:
+            logger.info(f"Handling mobile number input: State={state}, User Input={user_input}")
+
+            new_mobile_number = user_input
+            logger.info(f"User entered new mobile number: {new_mobile_number}")
+
+            # Validate the mobile number
+
+            # Validate the mobile number
+            validation_result = await validate_mobile_number(new_mobile_number)
+
+            if validation_result == "not_valid_format":
+                await update.message.reply_text( "not_valid_format - > invalid_mobile_format +374xxxxxxxx or 0xxxxxxxx or 374xxxxxxxx ")
+                return
+            elif validation_result == "valid_not_registered_in_API":
+                await update.message.reply_text(" mobile_not_registered_in_API enter what is registered in veracnund +374xxxxxxxx or 0xxxxxxxx or 374xxxxxxxx ")
+                return
+
+            # Save the mobile number if valid and registered
+            save_user(telegram_id, new_mobile_number)
+            logger.info(f"Mobile number {new_mobile_number} registered successfully for telegram_id={telegram_id}")
+
+
+            # Transition to step1_mobile_register_succesfully
+            user_data[telegram_id]["state"] = "step1_mobile_register_succesfully"
+            await update.message.reply_text(TRANSLATIONS["mobile_number_saved"].format(new_mobile_number=new_mobile_number))
+            reply_markup = get_main_menu()
+            await update.message.reply_text(TRANSLATIONS["choose_action"], reply_markup=reply_markup)
+            logger.info(f"Completed step0_register_mobile in {time.time() - start_time:.2f} seconds")
+
+            return
+
+        elif state == "step2_mobile_register_succesfully_show_my_objects":
+            logger.info(f"we will catch this above ! User selected object we are in state == step2_mobile_register_succesfully_show_my_objects  ->: {user_input}")
+            # code = user_input.split()[0]  # Extract code from button text
+            # # user_data[telegram_id]["prev_state"] = "step2_mobile_register_succesfully_show_my_objects"
+            # # user_data[telegram_id]["state"] = "step4_mobile_register_succesfully_show_my_objects_show_payment_history"
+            # await show_payment_history(code, update)
+
+
+            return
+
+        # elif state == "step4_mobile_register_succesfully_show_my_objects_show_payment_history":
+        #     if user_input == "Back":
+        #         logger.info(f"User selected 'Back' for telegram_id={telegram_id}")
+        #         user_data[telegram_id]["state"] = "step2_mobile_register_succesfully_show_my_objects"
+        #         mobile_number = user_data[telegram_id].get("mobile_number")
+        #         await copy_of_ShowMyObject_based_on_mobile_number(mobile_number, update)
+        #         return
+
+        else:
+            logger.warning(f"Unknown command or state for telegram_id={telegram_id}: {user_input}")
+            await update.message.reply_text(TRANSLATIONS["unknown_command"])
+    else:
+        logger.warning(f"User data not found for telegram_id={telegram_id}")
+        await update.message.reply_text(TRANSLATIONS["unknown_command"])
+
+def get_associated_with_this_telegram_id_mobile_number(telegram_id):
+    """
+    Fetch the mobile number associated with the given Telegram ID.
+    """
+    logger.info(f"Fetching mobile number for telegram_id={telegram_id}")
+    user = check_user_exists(telegram_id)
+    if user:
+        mobile_number = user.get("mobile_number")
+        logger.info(f"Mobile number found for telegram_id={telegram_id}: {mobile_number}")
+        return mobile_number
+    logger.warning(f"No mobile number found for telegram_id={telegram_id}")
+    return None
+
+
+def get_step1_buttons():
+    """
+    Generate buttons for step1_mobile_register_succesfully.
+    """
+    logger.info("Generating buttons for step1_mobile_register_succesfully.")
+    keyboard = [
+        [KeyboardButton(TRANSLATIONS["yes_show_objects"])],
+        [KeyboardButton("change_mobile get_step1_buttons")]
+    ]
+    logger.info(f"Step1 buttons: {keyboard}")
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+
+async def validate_mobile_number(mobile_number: str) -> str:
+    """
+    Validate the format and API registration of a mobile number.
+
+    Args:
+        mobile_number (str): The mobile number provided by the user.
+
+    Returns:
+        str: Validation result:
+             - "valid_and_registered_in_API"
+             - "not_valid_format"
+             - "valid_not_registered_in_API"
+    """
+    logger.info(f"Validating mobile number: {mobile_number}")
+
+    # Check format
+    if not (mobile_number.startswith("+374") and len(mobile_number) == 12) and \
+       not (mobile_number.startswith("0") and len(mobile_number) == 9) and \
+       not (mobile_number.startswith("374") and len(mobile_number) == 11):
+        logger.warning(f"Mobile number does not match required format: {mobile_number}")
+        return "not_valid_format"
+
+    # Check API validation
+    logger.info(f"Mobile number format valid. Checking registration via API: {mobile_number}")
+    response = await validate_and_fetch_mobile_number(mobile_number)  # Assume this function interacts with the API
+    if response:
+        logger.info(f"Mobile number {mobile_number} is registered in the API.")
+        return "valid_and_registered_in_API"
+    else:
+        logger.info(f"Mobile number {mobile_number} is not registered in the API.")
+        return "valid_not_registered_in_API"
+
+
+async def display_properties(validation_response, update):
+    """
+    Display details of each property in the validation response.
+    INFO:database_operations:validation_response >>>>>>>>>  {'firstName': 'Մերի', 'lastName': 'Տեր-Հարությունովա', 'middleName': 'Դավթի',
+     'phoneNumber': '37491995901', 'email': '', 'customerProperties': [{'apartment': '48 շենք', 'number': '1', 'code': 'A-48-1', 'type': 'Բնակարան'}]}
+
+    """
+    customer_properties = validation_response.get("customerProperties", [])
+    if not customer_properties:
+        await update.message.reply_text("No properties found.")
+        return
+
+    for prop in customer_properties:
+        # Extract property details
+        code = prop.get("code", "N/A")
+        obj_type = prop.get("type", "N/A")
+        apartment = prop.get("apartment", "N/A")
+        number = prop.get("number", "N/A")
+
+        # Format the message
+        message = (
+            f"Property Details:\n"
+            f"Code: {code}\n"
+            f"Type: {obj_type}\n"
+            f"Apartment: {apartment}\n"
+            f"Number: {number}"
+        )
+        # Send the message
+        await update.message.reply_text(message)

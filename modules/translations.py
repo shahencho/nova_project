@@ -11,7 +11,7 @@ TRANSLATIONS = {
     ),
     # Message when displaying found objects assigned to the user
     # "We found objects assigned to you. Select one to view details:"
-    "found_objects": "Այս համարին  կցված օբյեկտները։ Ընտրեք մեկը՝ մանրամասներ դիտելու համար։",
+    "found_objects": "Այս համարին  կցված են հետևյալ օբյեկտները։ Ընտրեք մեկը՝ մանրամասներ դիտելու համար։\n\r",
     # Button text for changing associated mobile number
     # "Change Associated Mobile"
     "change_mobile": "Փոխել կցված հեռախոսահամարը",
@@ -31,7 +31,7 @@ TRANSLATIONS = {
     # "Please enter your new phone number in the format +374xxxxxxxx or 0xxxxxxxx."
     "enter_new_mobile": "Խնդրում ենք մուտքագրել Ձեր նոր հեռախոսահամարը հետևյալ ֆորմատով՝ +374xxxxxxxx կամ 0xxxxxxxx։ to test use - < 37491995901 > <37494777513> < 37455024479> <37494555585> ",
     # Message confirming the found mobile number and associated properties
-    "mobile_saved_in_db_found": "Գտանք Ձեր հեռախոսահամարին կցված գույք։ Վերջին անգամ օգտագործված հեռախոսահամարը ",
+    "mobile_saved_in_db_found": " \n\nԳտանք Ձեր հեռախոսահամարին կցված գույքը։ (Վերջին անգամ օգտագործված հեռախոսահամարով) ",
     # Prompt to choose a flat building
     "choose_flat_building": (
         "Դուք ընտրել եք ԲՆԱԿԱՐԱՆ, ընտրեք շենքը "
@@ -83,7 +83,22 @@ TRANSLATIONS = {
 
     "yes_show_objects": "Այո, ցույց տալ իմ օբյեկտները",
 
-    "back_to_objects" : "Վերադառնալ",
+    "back_to_objects": "Վերադառնալ",
+
+    "no_mobile_number_linked": "no_mobile_number_linked",
+
+    "Refresh": "Թարմացնել",
+
+    "Back1": "Վերադառնալ",
+
+    "Blady": "Վերադառնալ ",  
+    
+    "choose_action": "choose_action",
+  
+
+    "invalid_mobile_format": "invalid_mobile_format", 
+
+    "back_to_main_menu": "back_to_main_menu",
 
     "case_debt_no_deposit":  (
     "Դուք ունեք պարտք, պարտքի գումարը՝  {debt}. ։ Խնդրում ենք հնարավորինս շուտ կատարել վճարումը։\n "
