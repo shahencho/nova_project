@@ -14,7 +14,10 @@ TRANSLATIONS = {
         "+374xxxxxxxx կամ 0xxxxxxxx  "
     ),
     # Message when displaying found objects assigned to the user
-    "found_objects": "{mobile_number_param} հեռախոսահամարին կցված է հետևյալ գույքը։  Ընտրեք գույքը՝ վճարումների պատմությունը դիտելու համար։",
+    "found_objects": "{mobile_number_param} հեռախոսահամարին կցված է հետևյալ գույքը։",
+
+    "select_object_to_see_history": "Ընտրեք գույքը՝ վճարումների պատմությունը դիտելու համար։",
+
     # Button text for changing associated mobile number
     "change_mobile": "Դիտարկել այլ հեռախոսահամարին կցած գույքի մասին ինֆորմացիա։",
     # Error message when failing to fetch property details
