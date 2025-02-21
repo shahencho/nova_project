@@ -17,14 +17,27 @@ logger = logging.getLogger(__name__)
     # )
     # return mydb
 
+# def initiate_connection():
+#     mydb = mysql.connector.connect(
+#     host='localhost',
+#     user='shahencho',
+#     password='Dielea82!Ocean',
+#     database='shahencho_mydatabase'
+#     )
+#     return mydb
+
+
 def initiate_connection():
+    logger.info("Initiating database connection...")
     mydb = mysql.connector.connect(
-    host='localhost',
-    user='shahencho',
-    password='Dielea82!Ocean',
-    database='shahencho_mydatabase'
+        host='localhost',
+        user='shahencho',
+        password='Myelea82!',
+        database='shahencho_mydatabase'
     )
     return mydb
+
+
 
 # Check if user exists in the database
 def check_user_exists(telegram_id, mobile_number=None):

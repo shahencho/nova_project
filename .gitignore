@@ -1,2 +1,8 @@
 credentials.json
+<<<<<<< HEAD
 *.log
+=======
+.history/
+modules/translationsfeb2.py
+tempop.py
+>>>>>>> 3fd2a45b1de9fe2886fe8c70dbef673c12b4746c
