@@ -7,13 +7,22 @@ from api_helpers import fetch_customer_properties
 logger = logging.getLogger(__name__)
 
 # Database connection
+# def initiate_connection():
+  #   logger.info("Initiating database connection...")
+    # mydb = mysql.connector.connect(
+      #   host='localhost',
+        # user='shahencho',
+        # password='Myelea82!',
+        # database='shahencho_mydatabase'
+    # )
+    # return mydb
+
 def initiate_connection():
-    logger.info("Initiating database connection...")
     mydb = mysql.connector.connect(
-        host='localhost',
-        user='shahencho',
-        password='Myelea82!',
-        database='shahencho_mydatabase'
+    host='localhost',
+    user='shahencho',
+    password='Dielea82!Ocean',
+    database='shahencho_mydatabase'
     )
     return mydb
 

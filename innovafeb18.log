@@ -1,0 +1,137 @@
+nohup: ignoring input
+INFO:__main__:Starting bot application...
+INFO:telegram.ext.Application:Application started
+INFO:handlers:Received text message from telegram_id=449708378: Ցույց տալ իմ գույքի մանրամասները
+WARNING:handlers:Session lost for telegram_id=449708378. Restarting session...
+INFO:handlers:Initialized user data for telegram_id=449708378
+INFO:handlers:Received /start command from telegram_id=449708378 with name=Shahen
+INFO:database_operations:Checking if user exists: telegram_id=449708378, mobile_number=None
+INFO:database_operations:User lookup result: {'id': 11, 'telegram_id': '449708378', 'mobile_number': '37498070232', 'obj_type': None, 'unique_payment_code': None}
+INFO:handlers:User check returned: {'id': 11, 'telegram_id': '449708378', 'mobile_number': '37498070232', 'obj_type': None, 'unique_payment_code': None}
+INFO:handlers:User found in database. Proceeding to main menu.
+INFO:api_helpers:Token fetched successfully: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIzIiwiZW1haWwiOiJ0ZWxlZ3JhbUBjbGllbnQuYW0iLCJyb2xlIjoiT3V0Q2xpZW50IiwiY2lkIjoiMSIsImxpZCI6IjEiLCJuYmYiOjE3Mzk4OTAzNzUsImV4cCI6MTc0NzY2NjM3NSwiaWF0IjoxNzM5ODkwMzc1LCJpc3MiOiJDb25kb21pbml1bSJ9.Mm9W-fSoWod3Qf-OaMydfb_EPGfPWIwWk2bT8kS4iBQ
+INFO:api_helpers:Calling validation API with URL: https://condominium-server.technologist.ai/api/Customer/telegram/validation?phoneNumber=37498070232
+INFO:handlers:Customer properties fetched: {'firstName': 'Հակոբ', 'lastName': 'Մանուկյան', 'middleName': 'Սերյոժայի', 'phoneNumber': '37498070232', 'email': 'hakobmanukyan9216@gmail.com', 'customerProperties': [{'apartment': '46 շենք', 'number': '69', 'code': 'A-46-69', 'type': 'Բնակարան'}, {'apartment': 'կայանատեղի 50/1', 'number': '476', 'code': 'P-501-476', 'type': 'Կայանատեղի'}]}
+INFO:menu_helpers:Generating main menu with KeyboardButton.
+INFO:handlers:Completed /start command in 0.96 seconds
+INFO:handlers:Received text message from telegram_id=449708378: Դիտարկել այլ հեռախոսահամարին կցած գույքի մասին ինֆորմացիա։
+INFO:handlers:Current state: step1_mobile_register_succesfully, Previous state: None
+INFO:handlers:User selected 'change_mobile' for telegram_id=449708378
+INFO:handlers:Received text message from telegram_id=449708378: Ցույց տալ իմ գույքի մանրամասները
+INFO:handlers:Current state: step0_register_mobile, Previous state: step1_mobile_register_succesfully
+INFO:handlers:User selected 'yes_show_objects' for telegram_id=449708378
+INFO:database_operations:Checking if user exists: telegram_id=449708378, mobile_number=None
+INFO:database_operations:User lookup result: {'id': 11, 'telegram_id': '449708378', 'mobile_number': '37498070232', 'obj_type': None, 'unique_payment_code': None}
+INFO:handlers:Handling 'show_my_object' for mobile number: 37498070232
+INFO:handlers:Starting copy_of_ShowMyObject_based_on_mobile_number for 37498070232
+INFO:api_helpers:Calling validation API with URL: https://condominium-server.technologist.ai/api/Customer/telegram/validation?phoneNumber=37498070232
+INFO:handlers:Fetched properties for 37498070232: {'firstName': 'Հակոբ', 'lastName': 'Մանուկյան', 'middleName': 'Սերյոժայի', 'phoneNumber': '37498070232', 'email': 'hakobmanukyan9216@gmail.com', 'customerProperties': [{'apartment': '46 շենք', 'number': '69', 'code': 'A-46-69', 'type': 'Բնակարան'}, {'apartment': 'կայանատեղի 50/1', 'number': '476', 'code': 'P-501-476', 'type': 'Կայանատեղի'}]}
+INFO:api_helpers:Calling getPropInfo API with URL: https://condominium-server.technologist.ai/api/Customer/telegram/getPropInfo?code=A-46-69
+INFO:api_helpers:API response for property details: {'debt': 0, 'deposit': 70020.0, 'transactionsPayInfo': [{'payedDate': '06/2024', 'payedAmount': 7780}, {'payedDate': '07/2024', 'payedAmount': 7780}, {'payedDate': '08/2024', 'payedAmount': 7780}, {'payedDate': '09/2024', 'payedAmount': 7780}, {'payedDate': '10/2024', 'payedAmount': 0}, {'payedDate': '11/2024', 'payedAmount': 15560}, {'payedDate': '12/2024', 'payedAmount': 0}, {'payedDate': '01/2025', 'payedAmount': 84802}, {'payedDate': '02/2025', 'payedAmount': 0}]}
+INFO:handlers:Fetched details for A-46-69: {'debt': 0, 'deposit': 70020.0, 'transactionsPayInfo': [{'payedDate': '06/2024', 'payedAmount': 7780}, {'payedDate': '07/2024', 'payedAmount': 7780}, {'payedDate': '08/2024', 'payedAmount': 7780}, {'payedDate': '09/2024', 'payedAmount': 7780}, {'payedDate': '10/2024', 'payedAmount': 0}, {'payedDate': '11/2024', 'payedAmount': 15560}, {'payedDate': '12/2024', 'payedAmount': 0}, {'payedDate': '01/2025', 'payedAmount': 84802}, {'payedDate': '02/2025', 'payedAmount': 0}]}
+INFO:handlers:Generated status message for A-46-69: -----------------------
+Գույք համար: A-46-69 (Բնակարան)
+Շենք: 46 շենք
+N: 69
+Կանխավճար: 70,020.00 
+Պարտք: 0.00 
+
+Դուք ունեք կանխավճար՝ 70,020.00։
+Շնորհակալություն ժամանակին վճարումները կատարելու համար։
+
+INFO:api_helpers:Calling getPropInfo API with URL: https://condominium-server.technologist.ai/api/Customer/telegram/getPropInfo?code=P-501-476
+INFO:api_helpers:API response for property details: {'debt': 0, 'deposit': 22851.5, 'transactionsPayInfo': [{'payedDate': '06/2024', 'payedAmount': 2470}, {'payedDate': '07/2024', 'payedAmount': 2470}, {'payedDate': '08/2024', 'payedAmount': 2470}, {'payedDate': '09/2024', 'payedAmount': 2470}, {'payedDate': '10/2024', 'payedAmount': 0}, {'payedDate': '11/2024', 'payedAmount': 4940}, {'payedDate': '12/2024', 'payedAmount': 0}, {'payedDate': '01/2025', 'payedAmount': 27550}, {'payedDate': '02/2025', 'payedAmount': 0}]}
+INFO:handlers:Fetched details for P-501-476: {'debt': 0, 'deposit': 22851.5, 'transactionsPayInfo': [{'payedDate': '06/2024', 'payedAmount': 2470}, {'payedDate': '07/2024', 'payedAmount': 2470}, {'payedDate': '08/2024', 'payedAmount': 2470}, {'payedDate': '09/2024', 'payedAmount': 2470}, {'payedDate': '10/2024', 'payedAmount': 0}, {'payedDate': '11/2024', 'payedAmount': 4940}, {'payedDate': '12/2024', 'payedAmount': 0}, {'payedDate': '01/2025', 'payedAmount': 27550}, {'payedDate': '02/2025', 'payedAmount': 0}]}
+INFO:handlers:Generated status message for P-501-476: -----------------------
+Գույք համար: P-501-476 (Կայանատեղի)
+Շենք: կայանատեղի 50/1
+N: 476
+Կանխավճար: 22,851.50 
+Պարտք: 0.00 
+
+Դուք ունեք կանխավճար՝ 22,851.50։
+Շնորհակալություն ժամանակին վճարումները կատարելու համար։
+
+INFO:handlers:Sending keyboard with objects: [[KeyboardButton(text='A-46-69 (Բնակարան)'), KeyboardButton(text='P-501-476 (Կայանատեղի)')], [KeyboardButton(text='Վերադառնալ'), KeyboardButton(text='Թարմացնել')]]
+INFO:handlers:State: step2_mobile_register_succesfully_show_my_objects | Prev State: step0_register_mobile
+INFO:handlers:Completed copy_of_ShowMyObject_based_on_mobile_number in 1.13 seconds
+INFO:handlers:Received text message from telegram_id=449708378: Վերադառնալ
+INFO:handlers:Current state: step2_mobile_register_succesfully_show_my_objects, Previous state: step0_register_mobile
+INFO:handlers:User selected 'Back1'. Restarting session for telegram_id=449708378
+INFO:handlers:Received /start command from telegram_id=449708378 with name=Shahen
+INFO:database_operations:Checking if user exists: telegram_id=449708378, mobile_number=None
+INFO:database_operations:User lookup result: {'id': 11, 'telegram_id': '449708378', 'mobile_number': '37498070232', 'obj_type': None, 'unique_payment_code': None}
+INFO:handlers:User check returned: {'id': 11, 'telegram_id': '449708378', 'mobile_number': '37498070232', 'obj_type': None, 'unique_payment_code': None}
+INFO:handlers:User found in database. Proceeding to main menu.
+INFO:api_helpers:Token fetched successfully: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIzIiwiZW1haWwiOiJ0ZWxlZ3JhbUBjbGllbnQuYW0iLCJyb2xlIjoiT3V0Q2xpZW50IiwiY2lkIjoiMSIsImxpZCI6IjEiLCJuYmYiOjE3Mzk4OTA0MTMsImV4cCI6MTc0NzY2NjQxMywiaWF0IjoxNzM5ODkwNDEzLCJpc3MiOiJDb25kb21pbml1bSJ9.QGhK1Uzd117b00TIdnqpp8f_9uG2_kaxQ_MHLdXdrNc
+INFO:api_helpers:Calling validation API with URL: https://condominium-server.technologist.ai/api/Customer/telegram/validation?phoneNumber=37498070232
+INFO:handlers:Customer properties fetched: {'firstName': 'Հակոբ', 'lastName': 'Մանուկյան', 'middleName': 'Սերյոժայի', 'phoneNumber': '37498070232', 'email': 'hakobmanukyan9216@gmail.com', 'customerProperties': [{'apartment': '46 շենք', 'number': '69', 'code': 'A-46-69', 'type': 'Բնակարան'}, {'apartment': 'կայանատեղի 50/1', 'number': '476', 'code': 'P-501-476', 'type': 'Կայանատեղի'}]}
+INFO:menu_helpers:Generating main menu with KeyboardButton.
+INFO:handlers:Completed /start command in 0.99 seconds
+INFO:handlers:Received text message from telegram_id=449708378: Դիտարկել այլ հեռախոսահամարին կցած գույքի մասին ինֆորմացիա։
+INFO:handlers:Current state: step1_mobile_register_succesfully, Previous state: None
+INFO:handlers:User selected 'change_mobile' for telegram_id=449708378
+INFO:handlers:Received text message from telegram_id=449708378: 37498070232
+INFO:handlers:Current state: step0_register_mobile, Previous state: step1_mobile_register_succesfully
+INFO:handlers:Handling mobile number input: State=step0_register_mobile, User Input=37498070232
+INFO:handlers:Validating mobile number: 37498070232
+INFO:handlers:Mobile number format valid. Checking registration via API: 37498070232
+INFO:database_operations:Normalized mobile number: 37498070232
+INFO:api_helpers:Calling validation API with URL: https://condominium-server.technologist.ai/api/Customer/telegram/validation?phoneNumber=37498070232
+INFO:database_operations:validation_response >>>>>>>>>  {'firstName': 'Հակոբ', 'lastName': 'Մանուկյան', 'middleName': 'Սերյոժայի', 'phoneNumber': '37498070232', 'email': 'hakobmanukyan9216@gmail.com', 'customerProperties': [{'apartment': '46 շենք', 'number': '69', 'code': 'A-46-69', 'type': 'Բնակարան'}, {'apartment': 'կայանատեղի 50/1', 'number': '476', 'code': 'P-501-476', 'type': 'Կայանատեղի'}]}  
+INFO:database_operations:None
+INFO:database_operations:Mobile number 37498070232 is valid and associated with properties.
+INFO:handlers:Mobile number 37498070232 is registered in the API.
+INFO:database_operations:Updated mobile number for telegram_id 449708378: 37498070232
+INFO:handlers:Mobile number 37498070232 registered successfully for telegram_id=449708378
+INFO:handlers:Received /start command from telegram_id=449708378 with name=Shahen
+INFO:database_operations:Checking if user exists: telegram_id=449708378, mobile_number=None
+INFO:database_operations:User lookup result: {'id': 11, 'telegram_id': '449708378', 'mobile_number': '37498070232', 'obj_type': None, 'unique_payment_code': None}
+INFO:handlers:User check returned: {'id': 11, 'telegram_id': '449708378', 'mobile_number': '37498070232', 'obj_type': None, 'unique_payment_code': None}
+INFO:handlers:User found in database. Proceeding to main menu.
+INFO:api_helpers:Token fetched successfully: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIzIiwiZW1haWwiOiJ0ZWxlZ3JhbUBjbGllbnQuYW0iLCJyb2xlIjoiT3V0Q2xpZW50IiwiY2lkIjoiMSIsImxpZCI6IjEiLCJuYmYiOjE3Mzk4OTA0MjMsImV4cCI6MTc0NzY2NjQyMywiaWF0IjoxNzM5ODkwNDIzLCJpc3MiOiJDb25kb21pbml1bSJ9.RdaMpXcGtnvC2rtXcRvRmxxNptDZTaAiZMZzBS_6Blo
+INFO:api_helpers:Calling validation API with URL: https://condominium-server.technologist.ai/api/Customer/telegram/validation?phoneNumber=37498070232
+INFO:handlers:Customer properties fetched: {'firstName': 'Հակոբ', 'lastName': 'Մանուկյան', 'middleName': 'Սերյոժայի', 'phoneNumber': '37498070232', 'email': 'hakobmanukyan9216@gmail.com', 'customerProperties': [{'apartment': '46 շենք', 'number': '69', 'code': 'A-46-69', 'type': 'Բնակարան'}, {'apartment': 'կայանատեղի 50/1', 'number': '476', 'code': 'P-501-476', 'type': 'Կայանատեղի'}]}
+INFO:menu_helpers:Generating main menu with KeyboardButton.
+INFO:handlers:Completed /start command in 1.02 seconds
+INFO:handlers:Received text message from telegram_id=449708378: Տեսնել հաշվետությունը
+INFO:handlers:Current state: step1_mobile_register_succesfully, Previous state: None
+INFO:handlers:Matching View_Report: user_input='Տեսնել հաշվետությունը' vs TRANSLATIONS['View_Report']='Տեսնել հաշվետությունը'
+INFO:handlers:Received text message from telegram_id=449708378: Ցույց տալ իմ գույքի մանրամասները
+INFO:handlers:Current state: step1_mobile_register_succesfully, Previous state: None
+INFO:handlers:User selected 'yes_show_objects' for telegram_id=449708378
+INFO:database_operations:Checking if user exists: telegram_id=449708378, mobile_number=None
+INFO:database_operations:User lookup result: {'id': 11, 'telegram_id': '449708378', 'mobile_number': '37498070232', 'obj_type': None, 'unique_payment_code': None}
+INFO:handlers:Handling 'show_my_object' for mobile number: 37498070232
+INFO:handlers:Starting copy_of_ShowMyObject_based_on_mobile_number for 37498070232
+INFO:api_helpers:Calling validation API with URL: https://condominium-server.technologist.ai/api/Customer/telegram/validation?phoneNumber=37498070232
+INFO:handlers:Fetched properties for 37498070232: {'firstName': 'Հակոբ', 'lastName': 'Մանուկյան', 'middleName': 'Սերյոժայի', 'phoneNumber': '37498070232', 'email': 'hakobmanukyan9216@gmail.com', 'customerProperties': [{'apartment': '46 շենք', 'number': '69', 'code': 'A-46-69', 'type': 'Բնակարան'}, {'apartment': 'կայանատեղի 50/1', 'number': '476', 'code': 'P-501-476', 'type': 'Կայանատեղի'}]}
+INFO:api_helpers:Calling getPropInfo API with URL: https://condominium-server.technologist.ai/api/Customer/telegram/getPropInfo?code=A-46-69
+INFO:api_helpers:API response for property details: {'debt': 0, 'deposit': 70020.0, 'transactionsPayInfo': [{'payedDate': '06/2024', 'payedAmount': 7780}, {'payedDate': '07/2024', 'payedAmount': 7780}, {'payedDate': '08/2024', 'payedAmount': 7780}, {'payedDate': '09/2024', 'payedAmount': 7780}, {'payedDate': '10/2024', 'payedAmount': 0}, {'payedDate': '11/2024', 'payedAmount': 15560}, {'payedDate': '12/2024', 'payedAmount': 0}, {'payedDate': '01/2025', 'payedAmount': 84802}, {'payedDate': '02/2025', 'payedAmount': 0}]}
+INFO:handlers:Fetched details for A-46-69: {'debt': 0, 'deposit': 70020.0, 'transactionsPayInfo': [{'payedDate': '06/2024', 'payedAmount': 7780}, {'payedDate': '07/2024', 'payedAmount': 7780}, {'payedDate': '08/2024', 'payedAmount': 7780}, {'payedDate': '09/2024', 'payedAmount': 7780}, {'payedDate': '10/2024', 'payedAmount': 0}, {'payedDate': '11/2024', 'payedAmount': 15560}, {'payedDate': '12/2024', 'payedAmount': 0}, {'payedDate': '01/2025', 'payedAmount': 84802}, {'payedDate': '02/2025', 'payedAmount': 0}]}
+INFO:handlers:Generated status message for A-46-69: -----------------------
+Գույք համար: A-46-69 (Բնակարան)
+Շենք: 46 շենք
+N: 69
+Կանխավճար: 70,020.00 
+Պարտք: 0.00 
+
+Դուք ունեք կանխավճար՝ 70,020.00։
+Շնորհակալություն ժամանակին վճարումները կատարելու համար։
+
+INFO:api_helpers:Calling getPropInfo API with URL: https://condominium-server.technologist.ai/api/Customer/telegram/getPropInfo?code=P-501-476
+INFO:api_helpers:API response for property details: {'debt': 0, 'deposit': 22851.5, 'transactionsPayInfo': [{'payedDate': '06/2024', 'payedAmount': 2470}, {'payedDate': '07/2024', 'payedAmount': 2470}, {'payedDate': '08/2024', 'payedAmount': 2470}, {'payedDate': '09/2024', 'payedAmount': 2470}, {'payedDate': '10/2024', 'payedAmount': 0}, {'payedDate': '11/2024', 'payedAmount': 4940}, {'payedDate': '12/2024', 'payedAmount': 0}, {'payedDate': '01/2025', 'payedAmount': 27550}, {'payedDate': '02/2025', 'payedAmount': 0}]}
+INFO:handlers:Fetched details for P-501-476: {'debt': 0, 'deposit': 22851.5, 'transactionsPayInfo': [{'payedDate': '06/2024', 'payedAmount': 2470}, {'payedDate': '07/2024', 'payedAmount': 2470}, {'payedDate': '08/2024', 'payedAmount': 2470}, {'payedDate': '09/2024', 'payedAmount': 2470}, {'payedDate': '10/2024', 'payedAmount': 0}, {'payedDate': '11/2024', 'payedAmount': 4940}, {'payedDate': '12/2024', 'payedAmount': 0}, {'payedDate': '01/2025', 'payedAmount': 27550}, {'payedDate': '02/2025', 'payedAmount': 0}]}
+INFO:handlers:Generated status message for P-501-476: -----------------------
+Գույք համար: P-501-476 (Կայանատեղի)
+Շենք: կայանատեղի 50/1
+N: 476
+Կանխավճար: 22,851.50 
+Պարտք: 0.00 
+
+Դուք ունեք կանխավճար՝ 22,851.50։
+Շնորհակալություն ժամանակին վճարումները կատարելու համար։
+
+INFO:handlers:Sending keyboard with objects: [[KeyboardButton(text='A-46-69 (Բնակարան)'), KeyboardButton(text='P-501-476 (Կայանատեղի)')], [KeyboardButton(text='Վերադառնալ'), KeyboardButton(text='Թարմացնել')]]
+INFO:handlers:State: step2_mobile_register_succesfully_show_my_objects | Prev State: step1_mobile_register_succesfully
+INFO:handlers:Completed copy_of_ShowMyObject_based_on_mobile_number in 1.12 seconds
