@@ -61,7 +61,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
         
-        message1 = f"{TRANSLATIONS['mobile_saved_in_db_found']} : {mobile_number}\n\n"
+        message1 = f"{TRANSLATIONS['mobile_saved_in_db_found']}{mobile_number}\n\n"
 
 
         await update.message.reply_text(message1)
@@ -348,7 +348,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logger.info(f"Matching View_Report: user_input='{user_input}' vs TRANSLATIONS['View_Report']='{TRANSLATIONS['View_Report']}'")
             
             GOOGLE_DOC_LINK = "https://drive.google.com/drive/folders/1_9mM8bYcJY0vNJOGYuXm43EBMFds-N4B"
-            await update.message.reply_text(f"Դուք կարող եք դիտել հաշվետվությունը այստեղ: {GOOGLE_DOC_LINK}")
+            await update.message.reply_text(f"Դուք կարող եք դիտել հաշվետվությունն այստեղ՝ {GOOGLE_DOC_LINK}")
             return
 
 

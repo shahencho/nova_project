@@ -27,7 +27,7 @@ TRANSLATIONS = {
     # Message when no transactions are found for an object
     "no_transactions": "{code}-ի համար վճարումներ չեն գտնվել։",
     # Question asking the user if they want to see payment details
-    "ask_to_view_details": "Ցանկանու՞մ եք տեսնել այս գույքի վճարումների մանրամասները։",
+    "ask_to_view_details": "Եթե ցանկանում եք տեսնել վճարման մանրամասները, սեղմեք մենյույի համապատասխան կոճակը։",
     # Prompt to enter a new mobile number
     # "enter_new_mobile": (
     #     "Խնդրում ենք մուտքագրել Ձեր նոր հեռախոսահամարը հետևյալ ֆորմատով՝ +374xxxxxxxx կամ 0xxxxxxxx։ "
@@ -39,7 +39,7 @@ TRANSLATIONS = {
     ),
 
     # Message confirming the found mobile number and associated properties
-    "mobile_saved_in_db_found": "Գտանք Ձեր հեռախոսահամարին կցված գույք։ Վերջին անգամ օգտագործված հեռախոսահամարը",
+    "mobile_saved_in_db_found": "Գտանք Ձեր հեռախոսահամարին կցված գույք։ Վերջին անգամ օգտագործված հեռախոսահամարը` ",
     # Prompt to choose a flat building
     "choose_flat_building": (
         "Դուք ընտրել եք ԲՆԱԿԱՐԱՆ, ընտրեք շենքը "

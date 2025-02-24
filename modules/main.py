@@ -1,14 +1,20 @@
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ApplicationHandlerStop
 import telegram
+import json
 
 from handlers import start,handle_text
-from settings import BOT_TOKEN
+# from settings import BOT_TOKEN
 import logging
 from  database_operations import initiate_connection
 
 from telegram.ext import ContextTypes
 from telegram.error import TimedOut  # Import the TimedOut exception
 import httpx  # Import httpx if you're using it in your code
+
+from telegram import Update
+
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +41,13 @@ logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 def main():
+    with open("credentials.json", "r") as f:
+        credentials = json.load(f)
+        BOT_TOKEN = credentials.get("bot_token")
+    
     logger.info("Starting bot application...")
     application = Application.builder().token(BOT_TOKEN).build()
+    
 
     application.add_error_handler(global_exception_handler)
 
