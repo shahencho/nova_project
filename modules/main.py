@@ -25,7 +25,7 @@ async def global_exception_handler(update: object, context: ContextTypes.DEFAULT
     logger.error(f"Unhandled exception: {context.error}")
 
     if isinstance(context.error, (telegram.error.TimedOut, httpx.Timeout)):
-        logger.error("Timeout detected. Restarting interaction.")
+        logger.error("Timeout detected.. Restarting interaction.")
         # Restart interaction using the `start` function
         if isinstance(update, Update):
             await start(update, context)
