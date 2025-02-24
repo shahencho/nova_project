@@ -1,12 +1,6 @@
 credentials.json
-<<<<<<< HEAD
 *.log
-=======
 .history/
 modules/translationsfeb2.py
 tempop.py
-<<<<<<< HEAD
 venv/
-=======
->>>>>>> 3fd2a45b1de9fe2886fe8c70dbef673c12b4746c
->>>>>>> 18e64dc1106a57b8dd3bd1b9e4575ff3e4e2c9ed
